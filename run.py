@@ -1,15 +1,9 @@
 if __name__ == "__main__":
-    import os
     import sys
-    import time
     from watdo import main
-    from watdo.environ import IS_DEV
-
-    if IS_DEV and os.name != "nt":
-        os.environ["TZ"] = "UTC"
-        time.tzset()
+    from watdo.entry_point import main_wrapper
 
     try:
-        sys.exit(main())
+        sys.exit(main_wrapper(main))
     except KeyboardInterrupt:
         sys.exit(130)

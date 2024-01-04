@@ -4,20 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [scripts]
-app = "python run.py"
-mypy = "mypy ."
+main = "python run.py"
 tests = "coverage run -m pytest"
-format = "black ."
-mypy_install_types = "mypy --install-types"
+check = "bash -c 'black . && mypy . && mypy --install-types'"
 
 [packages]
-uvloop = {version = "*", sys_platform = "== 'linux'"}
-"discord.py" = "*"
-charset-normalizer = "*"
-redis = "*"
-recurrent = "*"
-python-dateutil = "*"
-dateparser = "*"
+uvloop = {version = "*", markers = "sys_platform == 'linux'"}
 
 [dev-packages]
 mypy = "*"

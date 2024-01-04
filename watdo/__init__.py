@@ -1,22 +1,13 @@
 import asyncio
-from watdo.discord import Bot
-from watdo.database import Database
-from watdo.environ import DISCORD_TOKEN
-from watdo._main_runner import async_main_runner
-
-bot: Bot
+from watdo.logging import get_logger, trace, MeasureTime
 
 
-async def async_main(loop: asyncio.AbstractEventLoop) -> int:
-    global bot
+async def main(loop: asyncio.AbstractEventLoop) -> int:
+    logger = get_logger("main")
 
-    db = Database()
-    bot = Bot(loop=loop, database=db)
+    trace()
 
-    await bot.start(DISCORD_TOKEN)
+    with MeasureTime.cpu(logger, "main"):
+        logger.info("Hello world!!")
 
     return 0
-
-
-def main() -> int:
-    return async_main_runner(async_main)

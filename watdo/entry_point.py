@@ -4,7 +4,7 @@ import asyncio
 import logging
 import threading
 from types import TracebackType
-from typing import Callable, Coroutine, Any, Dict, Type, Optional
+from typing import Any, Dict, Type, Optional, Callable, Coroutine
 from watdo.logging import get_logger
 
 
@@ -38,8 +38,8 @@ def asyncio_exception_handler(
         excepthook(type(exception), exception, None)
 
 
-def async_main_runner(
-    func: Callable[[asyncio.AbstractEventLoop], Coroutine[Any, Any, int]]
+def main_wrapper(
+    main: Callable[[asyncio.AbstractEventLoop], Coroutine[Any, Any, int]]
 ) -> int:
     if os.name == "nt":
         loop_factory = None
@@ -59,4 +59,4 @@ def async_main_runner(
             args.exc_traceback,
         )
 
-        return runner.run(func(loop))
+        return runner.run(main(loop))
