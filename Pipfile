@@ -10,6 +10,8 @@ check = "bash -c 'black . && mypy . && mypy --install-types'"
 
 [packages]
 uvloop = {version = "*", markers = "sys_platform == 'linux'"}
+"discord.py" = "*"
+redis = "*"
 
 [dev-packages]
 mypy = "*"
