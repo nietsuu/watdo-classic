@@ -1,5 +1,6 @@
 import asyncio
 from typing import cast, Union
+from watdo.models import DataModel
 from watdo.logging import get_logger
 from watdo.db.connector import DatabaseConnector, FileDatabase
 
@@ -124,3 +125,8 @@ async def rem(path: str) -> None:
         raise KeyError(path)
 
     await asyncio.gather(*coros)
+
+
+async def set_model(path: str, model: DataModel) -> None:
+    await model.validate(model.__dict__)
+    await set(path, model.__dict__)

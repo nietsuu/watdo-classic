@@ -12,6 +12,7 @@ check = "bash -c 'black . && mypy . && mypy --install-types'"
 uvloop = {version = "*", markers = "sys_platform == 'linux'"}
 "discord.py" = "*"
 redis = "*"
+typeddict-validator = "*"
 
 [dev-packages]
 mypy = "*"
