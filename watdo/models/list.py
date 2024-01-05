@@ -61,6 +61,5 @@ class TodoList(DataModel):
         self.utc_offset = data["utc_offset"]
         self.notes = data["notes"]
 
-    async def set_sticky_message_id(self, value: Optional[int]) -> None:
-        self.sticky_message_id = value
-        await db.set_model(f"lists.{self.uuid}", self)
+    def save_changes(self) -> None:
+        self.run_coro(db.set_model(f"lists.{self.uuid}", self))

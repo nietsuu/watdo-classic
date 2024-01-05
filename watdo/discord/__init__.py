@@ -103,7 +103,7 @@ class DiscordBot(dc.Bot):
             try:
                 await coro
             except Exception as error:
-                get_logger("run_coro").exception(error)
+                get_logger(f"{type(self).__name__}.run_coro").exception(error)
 
         asyncio.create_task(async_wrapper())
 
@@ -157,13 +157,17 @@ class DiscordBot(dc.Bot):
         message = await self.send(ctx.channel, embed=embed)
 
         if todo_list is not None:
-            await todo_list.set_sticky_message_id(message.id)
+            todo_list.sticky_message_id = message.id
+            todo_list.save_changes()
 
         return message
 
     @staticmethod
     async def delete_message(message: discord.PartialMessage) -> None:
-        await message.delete()
+        try:
+            await message.delete()
+        except discord.errors.NotFound:
+            pass
 
     @staticmethod
     def parse_params_list(

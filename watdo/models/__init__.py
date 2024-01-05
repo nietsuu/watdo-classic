@@ -1,7 +1,9 @@
 import json
+import asyncio
 from abc import ABC, abstractmethod
-from typing import Unpack, TypedDict, Any, Type
+from typing import Unpack, TypedDict, Any, Type, Awaitable
 from typeddict_validator import validate_typeddict
+from watdo.logging import get_logger
 
 
 class DataModelDict(TypedDict):
@@ -22,6 +24,15 @@ class DataModel(ABC):
 
     def __str__(self) -> str:
         return json.dumps(self.__dict__, indent=4)
+
+    def run_coro(self, coro: Awaitable[None]) -> None:
+        async def async_wrapper() -> None:
+            try:
+                await coro
+            except Exception as error:
+                get_logger(f"{type(self).__name__}.run_coro").exception(error)
+
+        asyncio.create_task(async_wrapper())
 
     @classmethod
     async def validate(cls, data: Any) -> None:

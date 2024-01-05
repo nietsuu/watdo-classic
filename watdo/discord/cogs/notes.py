@@ -14,6 +14,8 @@ class RandomNotes(BaseCog):
         if todo_list is None:
             raise FailCommand("You need to setup a list for this channel first.")
 
+        todo_list.notes.append(note)
+        todo_list.save_changes()
         await self.bot.update_sticky(ctx, "Note added ✅")
 
 
