@@ -64,6 +64,9 @@ def _construct_data(parent_path: str, parent_items: list[tuple[str, D]]) -> T:
         if keys[0].startswith("["):
             index = int(keys[0].strip("[]"))
 
+            if index == -1:
+                return []
+
             try:
                 arr[index] = data
             except IndexError:
@@ -82,7 +85,15 @@ def _flatten_data(parent_path: str, data: T) -> list[tuple[str, D]]:
             items.extend(_flatten_data(f"{parent_path}.{k}", v))
 
     elif isinstance(data, list):
-        for i, e in enumerate(data):
+        iter_data: enumerate[T]
+
+        if len(data) == 0:
+            # Represents empty list
+            iter_data = enumerate([None], start=-1)
+        else:
+            iter_data = enumerate(data)
+
+        for i, e in iter_data:
             items.extend(_flatten_data(f"{parent_path}.[{i}]", e))
 
     else:
