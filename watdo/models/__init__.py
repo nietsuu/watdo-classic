@@ -5,7 +5,6 @@ from typeddict_validator import validate_typeddict
 
 
 class DataModelDict(TypedDict):
-    uuid: str
     created_at: float
     created_by: str
 
@@ -16,10 +15,10 @@ class DataModel(ABC):
     def get_dict_type() -> Type[DataModelDict]:
         raise NotImplementedError
 
-    def __init__(self, **kwargs: Unpack[DataModelDict]) -> None:
-        self.uuid = kwargs["uuid"]
-        self.created_at = kwargs["created_at"]
-        self.created_by = kwargs["created_by"]
+    def __init__(self, uuid: str, **data: Unpack[DataModelDict]) -> None:
+        self.uuid = uuid
+        self.created_at = data["created_at"]
+        self.created_by = data["created_by"]
 
     def __str__(self) -> str:
         return json.dumps(self.__dict__, indent=4)

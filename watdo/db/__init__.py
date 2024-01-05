@@ -128,5 +128,8 @@ async def rem(path: str) -> None:
 
 
 async def set_model(path: str, model: DataModel) -> None:
-    await model.validate(model.__dict__)
-    await set(path, model.__dict__)
+    data = {**model.__dict__}
+    del data["uuid"]
+
+    await model.validate(data)
+    await set(path, data)
