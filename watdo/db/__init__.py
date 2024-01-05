@@ -1,4 +1,5 @@
-from typing import Union
+import asyncio
+from typing import cast, Union
 from watdo.logging import get_logger
 from watdo.db.connector import DatabaseConnector, FileDatabase
 
@@ -72,8 +73,21 @@ def _construct_data(parent_path: str, parent_items: list[tuple[str, D]]) -> T:
     return arr or obj or None
 
 
-def _flatten_data() -> list[tuple[str, D]]:
-    pass
+def _flatten_data(parent_path: str, data: T) -> list[tuple[str, D]]:
+    items = []
+
+    if isinstance(data, dict):
+        for k, v in data.items():
+            items.extend(_flatten_data(f"{parent_path}.{k}", v))
+
+    elif isinstance(data, list):
+        for i, e in enumerate(data):
+            items.extend(_flatten_data(f"{parent_path}.[{i}]", e))
+
+    else:
+        return [(parent_path, cast(D, data))]
+
+    return items
 
 
 async def get(path: str) -> T:
@@ -83,4 +97,10 @@ async def get(path: str) -> T:
 
 async def set(path: str, data: T) -> None:
     global _db
-    await _db.set(path, data)
+
+    coros = []
+
+    for key, value in _flatten_data(path, data):
+        coros.append(_db.set(key, value))
+
+    await asyncio.gather(*coros)
