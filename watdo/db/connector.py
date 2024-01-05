@@ -1,7 +1,7 @@
 import os
 import json
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, AsyncIterator
 
 if TYPE_CHECKING:
     from watdo import db
@@ -26,6 +26,11 @@ class DatabaseConnector(ABC):
 
     @abstractmethod
     async def rem(self, path: str) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def iter_paths(self, parent_path: str) -> AsyncIterator[str]:
+        yield ""
         raise NotImplementedError
 
 
@@ -83,3 +88,8 @@ class FileDatabase(DatabaseConnector):
             raise KeyError(path)
 
         self._write(items)
+
+    async def iter_paths(self, parent_path: str) -> AsyncIterator[str]:
+        for key, value in self._read():
+            if key.startswith(parent_path):
+                yield key
