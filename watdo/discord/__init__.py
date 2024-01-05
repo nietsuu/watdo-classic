@@ -11,11 +11,12 @@ class DiscordBot(dc.Bot):
     def __init__(self, *, loop: asyncio.AbstractEventLoop) -> None:
         super().__init__(
             loop=loop,
-            command_prefix=":",
+            command_prefix=">",
             help_command=None,
             intents=discord.Intents.all(),
         )
         self.logger = get_logger("DiscordBot")
+        self.color = discord.Color.from_rgb(191, 155, 231)
 
         # Add event handlers
         for name in dir(self):
