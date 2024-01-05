@@ -72,6 +72,15 @@ def _construct_data(parent_path: str, parent_items: list[tuple[str, D]]) -> T:
     return arr or obj or None
 
 
+def _flatten_data() -> list[tuple[str, D]]:
+    pass
+
+
 async def get(path: str) -> T:
     global _db
     return _construct_data(path, await _db.get(path))
+
+
+async def set(path: str, data: T) -> None:
+    global _db
+    await _db.set(path, data)

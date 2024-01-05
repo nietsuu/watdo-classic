@@ -40,14 +40,29 @@ class FileDatabase(DatabaseConnector):
         self._file.seek(0)
         return [(k, v) for k, v in json.load(self._file).items()]
 
+    def _write(self, items: list[tuple[str, "db.D"]]) -> None:
+        obj = {k: v for k, v in items}
+
+        with open("file_db.json", "w") as file:
+            json.dump(obj, file, indent=4)
+
     async def get(self, path: str) -> list[tuple[str, "db.D"]]:
         data = []
 
-        for key, value in self._read():
+        for key, value in sorted(self._read()):
             if key.startswith(path):
                 data.append((key, value))
 
         return data
 
     async def set(self, path: str, data: "db.D") -> None:
-        pass
+        items = self._read()
+
+        for index, (key, value) in enumerate(items):
+            if key == path:
+                items[index] = (path, data)
+                break
+        else:
+            items.append((path, data))
+
+        self._write(sorted(items))
