@@ -1,6 +1,10 @@
 import os
 import json
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from watdo import db
 
 
 class DatabaseConnector(ABC):
@@ -13,12 +17,12 @@ class DatabaseConnector(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get(self) -> None:
+    async def get(self, path: str) -> list[tuple[str, "db.D"]]:
         raise NotImplementedError
 
-    @abstractmethod
-    async def set(self) -> None:
-        raise NotImplementedError
+    # @abstractmethod
+    # async def set(self) -> None:
+    #     raise NotImplementedError
 
 
 class FileDatabase(DatabaseConnector):
@@ -31,3 +35,16 @@ class FileDatabase(DatabaseConnector):
 
     async def close(self) -> None:
         self._file.close()
+
+    def _read(self) -> dict[str, "db.D"]:
+        self._file.seek(0)
+        return json.load(self._file)
+
+    async def get(self, path: str) -> list[tuple[str, "db.D"]]:
+        data = []
+
+        for key, value in self._read().items():
+            if key.startswith(path):
+                data.append((key, value))
+
+        return data

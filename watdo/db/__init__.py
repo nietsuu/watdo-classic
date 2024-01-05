@@ -2,6 +2,13 @@ from typing import Union
 from watdo.logging import get_logger
 from watdo.db.connector import DatabaseConnector, FileDatabase
 
+D = Union[
+    str,
+    int,
+    float,
+    bool,
+    None,
+]
 T = Union[
     str,
     int,
@@ -26,3 +33,45 @@ async def close() -> None:
     global _db
     await _db.close()
     logger.info("Database closed.")
+
+
+def _construct_data(parent_path: str, parent_items: list[tuple[str, D]]) -> T:
+    items = []
+
+    for key, value in parent_items:
+        if not key.startswith(parent_path):
+            continue
+
+        try:
+            key = key.split(parent_path + ".")[1]
+        except IndexError:
+            key = ""
+
+        items.append((key, value))
+
+    arr: list["T"] = []
+    obj: dict[str, "T"] = {}
+
+    for path, value in items:
+        if path == "":
+            return value
+
+        keys = path.split(".")
+        data = _construct_data(keys[0], items)
+
+        if keys[0].startswith("["):
+            index = int(keys[0].strip("[]"))
+
+            try:
+                arr[index] = data
+            except IndexError:
+                arr.append(data)
+        else:
+            obj[keys[0]] = data
+
+    return arr or obj or None
+
+
+async def get(path: str) -> T:
+    global _db
+    return _construct_data(path, await _db.get(path))
