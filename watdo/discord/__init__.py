@@ -1,11 +1,11 @@
 import os
 import glob
 import asyncio
-from typing import cast, Any, Awaitable, Optional, Mapping, Callable
+from typing import cast, Any, Awaitable, Mapping, Callable
 from dataclasses import dataclass
 import discord
 from discord.ext import commands as dc
-from watdo.errors import CancelCommand
+from watdo.errors import CancelCommand, CustomException
 from watdo.logging import get_logger
 from watdo.models.list import TodoList
 from watdo.discord.embeds import Embed
@@ -79,13 +79,22 @@ class DiscordBot(dc.Bot):
     ) -> None:
         if isinstance(error, dc.MissingRequiredArgument) and ctx.command is not None:
             params = self.parse_params(ctx.command)
-            await self.update_sticky(ctx, f"{ctx.prefix}{ctx.invoked_with} {params}")
+            await self.update_sticky(
+                ctx,
+                CustomException(f"{ctx.prefix}{ctx.invoked_with} {params}"),
+            )
         elif isinstance(error, dc.CommandNotFound):
-            await self.update_sticky(ctx, f'No command "{ctx.invoked_with}" ❌')
+            await self.update_sticky(
+                ctx,
+                CustomException(f'No command "{ctx.invoked_with}" ❌'),
+            )
         elif isinstance(error, CancelCommand):
             pass
         else:
-            await self.update_sticky(ctx, f"**{type(error).__name__}:** {error}")
+            await self.update_sticky(
+                ctx,
+                CustomException(f"**{type(error).__name__}:** {error}"),
+            )
 
     def run_coro(self, coro: Awaitable[None]) -> None:
         async def async_wrapper() -> None:
@@ -111,7 +120,7 @@ class DiscordBot(dc.Bot):
     async def update_sticky(
         self,
         ctx: dc.Context["DiscordBot"],
-        msg: Optional[str] = None,
+        msg: str | Exception | None = None,
     ) -> discord.Message:
         async def delete_previous_sticky_message() -> None:
             prev_id = todo_list.sticky_message_id
@@ -122,9 +131,20 @@ class DiscordBot(dc.Bot):
 
         todo_list = await TodoList.from_ctx(ctx)
         ch = cast(discord.TextChannel, ctx.channel)
-        embed = Embed(self, f"#{ch.name}")
+        embed = Embed(
+            self,
+            f"#{ch.name}",
+            color=discord.Color.from_rgb(255, 8, 8)
+            if isinstance(msg, Exception)
+            else self.color,
+        )
 
         if msg is not None:
+            if isinstance(msg, CustomException):
+                msg = str(msg)
+            elif isinstance(msg, Exception):
+                msg = f"```\n{repr(msg)}\n```"
+
             embed.add_field(name="", value=msg, inline=False)
 
         self.run_coro(delete_previous_sticky_message())
