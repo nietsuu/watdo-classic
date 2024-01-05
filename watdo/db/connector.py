@@ -20,9 +20,9 @@ class DatabaseConnector(ABC):
     async def get(self, path: str) -> list[tuple[str, "db.D"]]:
         raise NotImplementedError
 
-    # @abstractmethod
-    # async def set(self) -> None:
-    #     raise NotImplementedError
+    @abstractmethod
+    async def set(self, path: str, data: "db.D") -> None:
+        raise NotImplementedError
 
 
 class FileDatabase(DatabaseConnector):
@@ -36,15 +36,18 @@ class FileDatabase(DatabaseConnector):
     async def close(self) -> None:
         self._file.close()
 
-    def _read(self) -> dict[str, "db.D"]:
+    def _read(self) -> list[tuple[str, "db.D"]]:
         self._file.seek(0)
-        return json.load(self._file)
+        return [(k, v) for k, v in json.load(self._file).items()]
 
     async def get(self, path: str) -> list[tuple[str, "db.D"]]:
         data = []
 
-        for key, value in self._read().items():
+        for key, value in self._read():
             if key.startswith(path):
                 data.append((key, value))
 
         return data
+
+    async def set(self, path: str, data: "db.D") -> None:
+        pass
