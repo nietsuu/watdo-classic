@@ -1,5 +1,6 @@
 from typing import Optional
 from discord.ext import commands as dc
+from watdo.errors import FailCommand
 from watdo.discord import DiscordBot
 from watdo.discord.cogs import BaseCog
 from watdo.discord.embeds import Embed
@@ -15,8 +16,7 @@ class Miscellaneous(BaseCog):
         command = self.bot.get_command(command_name)
 
         if command is None:
-            await self.bot.send(ctx, f'Command "{command_name}" not found ❌')
-            return
+            raise FailCommand(f'Command "{command_name}" not found ❌')
 
         embed.description = (
             " or ".join(f"`{n}`" for n in [command.name] + list(command.aliases))

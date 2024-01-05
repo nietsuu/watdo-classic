@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands as dc
+from watdo.errors import FailCommand
 from watdo.discord import DiscordBot
 from watdo.discord.cogs import BaseCog
 from watdo.models.list import TodoList
@@ -22,8 +23,7 @@ class Lists(BaseCog):
     async def setup(self, ctx: dc.Context[DiscordBot]) -> None:
         """Setup a todo list in this channel."""
         if await TodoList.from_ctx(ctx) is not None:
-            await self.bot.update_sticky(ctx, "There's already a list in this channel.")
-            return
+            raise FailCommand("There's already a list in this channel.")
 
         utc_offset = (
             await self.bot.interview(
