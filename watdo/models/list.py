@@ -1,7 +1,10 @@
-from typing import Type, Any, Unpack, Optional
+from typing import TYPE_CHECKING, Type, Any, Unpack, Optional
 from discord.ext import commands as dc
 from watdo import db, dt
 from watdo.models import DataModel, DataModelDict
+
+if TYPE_CHECKING:
+    from watdo.discord import DiscordBot
 
 
 class TodoListDict(DataModelDict):
@@ -16,13 +19,18 @@ class TodoList(DataModel):
         return TodoListDict
 
     @classmethod
-    async def from_ctx(cls, ctx: dc.Context) -> "TodoList":
+    async def from_ctx(cls, ctx: dc.Context["DiscordBot"]) -> "TodoList":
         uuid = str(ctx.channel.id)
         data: Any = await db.get(f"lists.{uuid}")
         return cls(uuid, **data)
 
     @classmethod
-    async def new_from_ctx(cls, ctx: dc.Context, *, utc_offset: float) -> "TodoList":
+    async def new_from_ctx(
+        cls,
+        ctx: dc.Context["DiscordBot"],
+        *,
+        utc_offset: float,
+    ) -> "TodoList":
         uuid = str(ctx.channel.id)
         todo_list = cls(
             uuid,

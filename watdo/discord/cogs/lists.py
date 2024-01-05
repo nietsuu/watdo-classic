@@ -11,7 +11,7 @@ class Lists(BaseCog):
         try:
             return UTCOffset(float(message.content)).value
         except Exception:
-            await self.send(
+            await self.bot.send(
                 message.channel,
                 "Please only send a number between -24 and 24.\n"
                 "Example: `8` for UTC+8.",
@@ -19,17 +19,17 @@ class Lists(BaseCog):
             return None
 
     @dc.hybrid_command()  # type: ignore[arg-type]
-    async def setup(self, ctx: dc.Context) -> None:
+    async def setup(self, ctx: dc.Context[DiscordBot]) -> None:
         """Setup a todo list in this channel."""
         try:
             await TodoList.from_ctx(ctx)
-            await self.update_sticky(ctx, "There's already a list in this channel.")
+            await self.bot.update_sticky(ctx, "There's already a list in this channel.")
             return
         except KeyError:
             pass
 
         utc_offset = (
-            await self.interview(
+            await self.bot.interview(
                 ctx,
                 questions={
                     "What is the UTC offset of this profile?": self._validate_utc_offset,
@@ -38,7 +38,7 @@ class Lists(BaseCog):
         )[0]
 
         await TodoList.new_from_ctx(ctx, utc_offset=utc_offset)
-        await self.update_sticky(ctx, "This channel is now under watdo's control.")
+        await self.bot.update_sticky(ctx, "This channel is now under watdo's control.")
 
 
 async def setup(bot: DiscordBot) -> None:

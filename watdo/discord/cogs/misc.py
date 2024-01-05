@@ -6,12 +6,16 @@ from watdo.discord.embeds import Embed
 
 
 class Miscellaneous(BaseCog):
-    async def command_help(self, ctx: dc.Context, command_name: str) -> None:
+    async def command_help(
+        self,
+        ctx: dc.Context[DiscordBot],
+        command_name: str,
+    ) -> None:
         embed = Embed(self.bot, "Command Help")
         command = self.bot.get_command(command_name)
 
         if command is None:
-            await self.send(ctx, f'Command "{command_name}" not found ❌')
+            await self.bot.send(ctx, f'Command "{command_name}" not found ❌')
             return
 
         embed.description = (
@@ -19,17 +23,21 @@ class Miscellaneous(BaseCog):
             + f"\n{command.help}"
         )
 
-        for param in self.parse_params_list(command):
+        for param in self.bot.parse_params_list(command):
             embed.add_field(
                 name=f"{param.value}{' - optional' if not param.is_required else ''}",
                 value=param.description or "No description.",
                 inline=False,
             )
 
-        await self.send(ctx, embed=embed)
+        await self.bot.send(ctx, embed=embed)
 
     @dc.hybrid_command()  # type: ignore[arg-type]
-    async def help(self, ctx: dc.Context, command: Optional[str] = None) -> None:
+    async def help(
+        self,
+        ctx: dc.Context[DiscordBot],
+        command: Optional[str] = None,
+    ) -> None:
         """Show this help message."""
         if command is not None:
             await self.command_help(ctx, command)
@@ -52,7 +60,7 @@ class Miscellaneous(BaseCog):
 
             for c in commands:
                 names = " or ".join(f"`{n}`" for n in [c.name] + list(c.aliases))
-                params = self.parse_params(c)
+                params = self.bot.parse_params(c)
                 new_line = "\n" if params else ""
                 cmds.append(f"{names}{new_line}{params}\n{c.help}")
 
@@ -62,12 +70,12 @@ class Miscellaneous(BaseCog):
                 + "\n\n".join(cmds),
             )
 
-        await self.send(ctx, embed=embed)
+        await self.bot.send(ctx, embed=embed)
 
     @dc.hybrid_command()  # type: ignore[arg-type]
-    async def ping(self, ctx: dc.Context) -> None:
+    async def ping(self, ctx: dc.Context[DiscordBot]) -> None:
         """Show watdo's brain processing speed."""
-        await self.send(ctx, f"Pong! **{round(self.bot.latency * 1000)}ms**")
+        await self.bot.send(ctx, f"Pong! **{round(self.bot.latency * 1000)}ms**")
 
 
 async def setup(bot: DiscordBot) -> None:
