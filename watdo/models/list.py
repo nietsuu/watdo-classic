@@ -61,5 +61,5 @@ class TodoList(DataModel):
         self.utc_offset = data["utc_offset"]
         self.notes = data["notes"]
 
-    def save_changes(self) -> None:
-        self.run_coro(db.set_model(f"lists.{self.uuid}", self))
+    async def save_changes(self) -> None:
+        await db.set_model(f"lists.{self.uuid}", self)

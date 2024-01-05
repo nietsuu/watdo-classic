@@ -158,7 +158,7 @@ class DiscordBot(dc.Bot):
 
         if todo_list is not None:
             todo_list.sticky_message_id = message.id
-            todo_list.save_changes()
+            await todo_list.save_changes()
 
         return message
 
