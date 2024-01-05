@@ -49,6 +49,14 @@ class DiscordBot(dc.Bot):
                 path = path.rstrip(".py").replace("/", ".").replace("\\", ".")
                 await self.load_extension(path)
 
+        # Ensure docstring for all commands
+        for cog in self.cogs.values():
+            for command in cog.get_commands():
+                if command.help is None:
+                    raise Exception(
+                        f"Please add docstring for {command.module}.{command.name}"
+                    )
+
         await super().start(token, reconnect=reconnect)
 
     async def _on_ready_event(self) -> None:
