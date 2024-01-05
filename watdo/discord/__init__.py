@@ -1,5 +1,6 @@
 import os
 import glob
+import random
 import asyncio
 from typing import cast, Any, Awaitable, Mapping, Callable
 from dataclasses import dataclass
@@ -138,7 +139,7 @@ class DiscordBot(dc.Bot):
         ch = cast(discord.TextChannel, ctx.channel)
         embed = Embed(
             self,
-            f"#{ch.name}",
+            f"#{ch.name}" if todo_list is None else random.choice(todo_list.notes),
             color=discord.Color.from_rgb(255, 8, 8)
             if isinstance(msg, Exception)
             else self.color,
