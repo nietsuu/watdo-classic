@@ -108,4 +108,13 @@ async def set(path: str, data: T) -> None:
 
 async def rem(path: str) -> None:
     global _db
-    await _db.rem(path)
+
+    coros = []
+
+    async for path in _db.iter_paths(path):
+        coros.append(_db.rem(path))
+
+    if len(coros) == 0:
+        raise KeyError(path)
+
+    await asyncio.gather(*coros)
