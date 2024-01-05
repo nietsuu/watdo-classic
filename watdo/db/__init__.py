@@ -92,7 +92,13 @@ def _flatten_data(parent_path: str, data: T) -> list[tuple[str, D]]:
 
 async def get(path: str) -> T:
     global _db
-    return _construct_data(path, await _db.get(path))
+
+    items = await _db.get(path)
+
+    if len(items) == 0:
+        raise KeyError(path)
+
+    return _construct_data(path, items)
 
 
 async def set(path: str, data: T) -> None:

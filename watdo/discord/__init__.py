@@ -4,7 +4,9 @@ import asyncio
 from typing import Any
 import discord
 from discord.ext import commands as dc
+from watdo.errors import CancelCommand
 from watdo.logging import get_logger
+from watdo.discord.cogs import BaseCog
 
 
 class DiscordBot(dc.Bot):
@@ -62,3 +64,16 @@ class DiscordBot(dc.Bot):
 
     async def _on_ready_event(self) -> None:
         self.logger.info("Ready!")
+
+    async def _on_command_error_event(
+        self, ctx: dc.Context, error: dc.CommandError
+    ) -> None:
+        if isinstance(error, dc.MissingRequiredArgument) and ctx.command is not None:
+            params = BaseCog.parse_params(ctx.command)
+            await BaseCog.send(ctx, f"{ctx.prefix}{ctx.invoked_with} {params}")
+        elif isinstance(error, dc.CommandNotFound):
+            await BaseCog.send(ctx, f'No command "{ctx.invoked_with}" ❌')
+        elif isinstance(error, CancelCommand):
+            pass
+        else:
+            await BaseCog.send(ctx, f"**{type(error).__name__}:** {error}")

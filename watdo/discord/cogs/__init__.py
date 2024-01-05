@@ -1,8 +1,10 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from dataclasses import dataclass
 import discord
 from discord.ext import commands as dc
-from watdo.discord import DiscordBot
+
+if TYPE_CHECKING:
+    from watdo.discord import DiscordBot
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -13,7 +15,7 @@ class ParsedCommandParam:
 
 
 class BaseCog(dc.Cog):
-    def __init__(self, bot: DiscordBot) -> None:
+    def __init__(self, bot: "DiscordBot") -> None:
         self.bot = bot
 
     @staticmethod
