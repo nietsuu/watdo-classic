@@ -1,3 +1,5 @@
+import os
+import glob
 import asyncio
 from typing import Any
 import discord
@@ -34,6 +36,19 @@ class DiscordBot(dc.Bot):
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         self.logger.info("Starting...")
+
+        # Load cogs
+        for path in glob.iglob(
+            os.path.join("watdo", "discord", "cogs", "**", "*"),
+            recursive=True,
+        ):
+            if path.endswith("__init__.py"):
+                continue
+
+            if path.endswith(".py"):
+                path = path.rstrip(".py").replace("/", ".").replace("\\", ".")
+                await self.load_extension(path)
+
         await super().start(token, reconnect=reconnect)
 
     async def _on_ready_event(self) -> None:
