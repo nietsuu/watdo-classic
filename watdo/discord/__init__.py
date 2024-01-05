@@ -5,7 +5,7 @@ from typing import cast, Any, Awaitable, Mapping, Callable
 from dataclasses import dataclass
 import discord
 from discord.ext import commands as dc
-from watdo.errors import CancelCommand, CustomException
+from watdo.errors import CancelCommand, FailCommand
 from watdo.logging import get_logger
 from watdo.models.list import TodoList
 from watdo.discord.embeds import Embed
@@ -81,19 +81,21 @@ class DiscordBot(dc.Bot):
             params = self.parse_params(ctx.command)
             await self.update_sticky(
                 ctx,
-                CustomException(f"{ctx.prefix}{ctx.invoked_with} {params}"),
+                dc.CommandError(f"{ctx.prefix}{ctx.invoked_with} {params}"),
             )
         elif isinstance(error, dc.CommandNotFound):
             await self.update_sticky(
                 ctx,
-                CustomException(f'No command "{ctx.invoked_with}" ❌'),
+                dc.CommandError(f'No command "{ctx.invoked_with}" ❌'),
             )
         elif isinstance(error, CancelCommand):
             pass
+        elif isinstance(error, FailCommand):
+            await self.update_sticky(ctx, error)
         else:
             await self.update_sticky(
                 ctx,
-                CustomException(f"**{type(error).__name__}:** {error}"),
+                dc.CommandError(f"**{type(error).__name__}:** {error}"),
             )
 
     def run_coro(self, coro: Awaitable[None]) -> None:
@@ -123,6 +125,9 @@ class DiscordBot(dc.Bot):
         msg: str | Exception | None = None,
     ) -> discord.Message:
         async def delete_previous_sticky_message() -> None:
+            if todo_list is None:
+                return
+
             prev_id = todo_list.sticky_message_id
 
             if prev_id is not None:
@@ -140,7 +145,7 @@ class DiscordBot(dc.Bot):
         )
 
         if msg is not None:
-            if isinstance(msg, CustomException):
+            if isinstance(msg, dc.CommandError):
                 msg = str(msg)
             elif isinstance(msg, Exception):
                 msg = f"```\n{repr(msg)}\n```"
@@ -150,7 +155,10 @@ class DiscordBot(dc.Bot):
         self.run_coro(delete_previous_sticky_message())
 
         message = await self.send(ctx.channel, embed=embed)
-        await todo_list.set_sticky_message_id(message.id)
+
+        if todo_list is not None:
+            await todo_list.set_sticky_message_id(message.id)
+
         return message
 
     @staticmethod

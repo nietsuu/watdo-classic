@@ -21,12 +21,9 @@ class Lists(BaseCog):
     @dc.hybrid_command()  # type: ignore[arg-type]
     async def setup(self, ctx: dc.Context[DiscordBot]) -> None:
         """Setup a todo list in this channel."""
-        try:
-            await TodoList.from_ctx(ctx)
+        if await TodoList.from_ctx(ctx) is not None:
             await self.bot.update_sticky(ctx, "There's already a list in this channel.")
             return
-        except KeyError:
-            pass
 
         utc_offset = (
             await self.bot.interview(

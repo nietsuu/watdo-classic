@@ -11,6 +11,7 @@ class TodoListDict(DataModelDict):
     guild_id: Optional[int]
     sticky_message_id: Optional[int]
     utc_offset: float
+    notes: list[str]
 
 
 class TodoList(DataModel):
@@ -19,9 +20,14 @@ class TodoList(DataModel):
         return TodoListDict
 
     @classmethod
-    async def from_ctx(cls, ctx: dc.Context["DiscordBot"]) -> "TodoList":
+    async def from_ctx(cls, ctx: dc.Context["DiscordBot"]) -> Optional["TodoList"]:
         uuid = str(ctx.channel.id)
-        data: Any = await db.get(f"lists.{uuid}")
+
+        try:
+            data: Any = await db.get(f"lists.{uuid}")
+        except KeyError:
+            return None
+
         return cls(uuid, **data)
 
     @classmethod
@@ -39,6 +45,7 @@ class TodoList(DataModel):
             guild_id=ctx.guild.id if ctx.guild else None,
             sticky_message_id=None,
             utc_offset=utc_offset,
+            notes=[],
         )
         await db.set_model(f"lists.{uuid}", todo_list)
         return todo_list
@@ -52,6 +59,7 @@ class TodoList(DataModel):
         self.guild_id = data["guild_id"]
         self.sticky_message_id = data["sticky_message_id"]
         self.utc_offset = data["utc_offset"]
+        self.notes = data["notes"]
 
     async def set_sticky_message_id(self, value: Optional[int]) -> None:
         self.sticky_message_id = value
