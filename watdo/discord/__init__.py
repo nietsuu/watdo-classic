@@ -289,3 +289,11 @@ class DiscordBot(dc.Bot):
             answers.append(answer)
 
         return answers
+
+    async def get_list(self, ctx: dc.Context["DiscordBot"]) -> TodoList:
+        todo_list = await TodoList.from_ctx(ctx)
+
+        if todo_list is None:
+            raise FailCommand("You need to setup a list for this channel first.")
+
+        return todo_list

@@ -10,7 +10,7 @@ class Notes(BaseCog):
     @dc.hybrid_command()  # type: ignore[arg-type]
     async def note(self, ctx: dc.Context[DiscordBot], *, note: str) -> None:
         """Write a random note to remember."""
-        todo_list = await self.get_list(ctx)
+        todo_list = await ctx.bot.get_list(ctx)
         todo_list.notes.append(note)
         await todo_list.save_changes()
         await self.bot.update_sticky(ctx, "Note added ✅")
@@ -18,7 +18,7 @@ class Notes(BaseCog):
     @dc.hybrid_command()  # type: ignore[arg-type]
     async def notes(self, ctx: dc.Context[DiscordBot]) -> None:
         """List all your notes."""
-        todo_list = await self.get_list(ctx)
+        todo_list = await ctx.bot.get_list(ctx)
         notes = []
 
         for index, note in enumerate(todo_list.notes):
@@ -29,7 +29,7 @@ class Notes(BaseCog):
     @dc.hybrid_command()  # type: ignore[arg-type]
     async def delete_note(self, ctx: dc.Context[DiscordBot]) -> None:
         """Delete a note."""
-        todo_list = await self.get_list(ctx)
+        todo_list = await ctx.bot.get_list(ctx)
 
         if len(todo_list.notes) == 0:
             await self.bot.update_sticky(ctx, "No notes to delete.")
