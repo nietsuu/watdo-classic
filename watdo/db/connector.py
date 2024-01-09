@@ -48,10 +48,10 @@ class FileDatabase(DatabaseConnector):
     def _read(self) -> list[tuple[str, "db.D"]]:
         self._file.seek(0)
         items = [(k, v) for k, v in json.load(self._file).items()]
-        return sorted(items)
+        return items
 
     def _write(self, items: list[tuple[str, "db.D"]]) -> None:
-        obj = {k: v for k, v in sorted(items)}
+        obj = {k: v for k, v in items}
 
         with open("file_db.json", "w") as file:
             json.dump(obj, file, indent=4)
