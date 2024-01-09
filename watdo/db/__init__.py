@@ -117,6 +117,19 @@ async def set(path: str, data: T) -> None:
     coros = []
 
     for key, value in _flatten_data(path, data):
+        if key.endswith(".[-1]"):
+            value = cast(int, value)
+            parent_path = ".".join(key.split(".")[:-1])
+            rem_coros = []
+
+            async for list_key in _db.iter_paths(f"{parent_path}.["):
+                index = int(list_key.split(".")[-1].strip("[]"))
+
+                if index >= value:
+                    rem_coros.append(_db.rem(list_key))
+
+            await asyncio.gather(*rem_coros)
+
         coros.append(_db.set(key, value))
 
     await asyncio.gather(*coros)

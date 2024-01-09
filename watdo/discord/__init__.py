@@ -6,6 +6,7 @@ from typing import cast, Any, Awaitable, Mapping, Callable
 from dataclasses import dataclass
 import discord
 from discord.ext import commands as dc
+from watdo.utils import truncate
 from watdo.errors import CancelCommand, FailCommand
 from watdo.logging import get_logger
 from watdo.models.list import TodoList
@@ -118,7 +119,7 @@ class DiscordBot(dc.Bot):
         if content is None:
             return await messageable.send(*args, **kwargs)
 
-        return await messageable.send(str(content)[:2000], *args, **kwargs)
+        return await messageable.send(truncate(str(content), 1998), *args, **kwargs)
 
     async def update_sticky(
         self,
