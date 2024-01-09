@@ -171,6 +171,18 @@ class DiscordBot(dc.Bot):
             pass
 
     @staticmethod
+    async def remove_reaction(
+        message: discord.Message,
+        *,
+        reaction: str,
+        user: discord.User,
+    ) -> None:
+        try:
+            await message.remove_reaction(reaction, user)
+        except discord.HTTPException:
+            pass
+
+    @staticmethod
     def parse_params_list(
         command: dc.Command[Any, Any, Any]
     ) -> list[ParsedCommandParam]:
