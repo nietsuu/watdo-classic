@@ -29,3 +29,4 @@ def env(t: Callable[[str], T], key: str) -> T:
 LOGGING_LEVEL: str = env(str, "LOGGING_LEVEL")
 FILE_LOGGING: bool = env(bool, "FILE_LOGGING")
 DISCORD_TOKEN: str = env(str, "DISCORD_TOKEN")
+IS_DEV: bool = env(bool, "IS_DEV")

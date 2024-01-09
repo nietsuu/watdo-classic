@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands as dc
 from watdo.utils import truncate
 from watdo.errors import CancelCommand, FailCommand
+from watdo.environ import IS_DEV
 from watdo.logging import get_logger
 from watdo.models.list import TodoList
 from watdo.discord.embeds import Embed
@@ -75,6 +76,16 @@ class DiscordBot(dc.Bot):
 
     async def _on_ready_event(self) -> None:
         self.logger.info("Ready!")
+        self.logger.debug("Syncing slash commands...")
+
+        if IS_DEV:
+            dev_server = cast(discord.Guild, self.get_guild(975234089353351178))
+            self.tree.copy_global_to(guild=dev_server)
+            synced_commands = await self.tree.sync(guild=dev_server)
+        else:
+            synced_commands = await self.tree.sync()
+
+        self.logger.debug(f"Synced {len(synced_commands)} slash command(s)")
 
     async def _on_command_error_event(
         self, ctx: dc.Context["DiscordBot"], error: dc.CommandError
