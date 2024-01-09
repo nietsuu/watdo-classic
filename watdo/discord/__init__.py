@@ -138,9 +138,10 @@ class DiscordBot(dc.Bot):
 
         todo_list = await TodoList.from_ctx(ctx)
         ch = cast(discord.TextChannel, ctx.channel)
+        title = f"#{ch.name}"
         embed = Embed(
             self,
-            f"#{ch.name}" if todo_list is None else random.choice(todo_list.notes),
+            title if todo_list is None else random.choice(todo_list.notes or [title]),
             color=discord.Color.from_rgb(255, 8, 8)
             if isinstance(msg, Exception)
             else self.color,
@@ -252,6 +253,9 @@ class DiscordBot(dc.Bot):
                 message = await self.wait_for("message", check=check, timeout=60 * 5)
             except asyncio.TimeoutError:
                 raise CancelCommand()
+
+            if message.content.startswith(cast(str, self.command_prefix)):
+                return await ask(question)
 
             validator = questions[question]
 

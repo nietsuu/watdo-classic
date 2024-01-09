@@ -4,7 +4,6 @@ from watdo.utils import truncate
 from watdo.errors import FailCommand
 from watdo.discord import DiscordBot
 from watdo.discord.cogs import BaseCog
-from watdo.discord.embeds import Embed, PagedEmbed
 
 
 class RandomNotes(BaseCog):
@@ -20,28 +19,26 @@ class RandomNotes(BaseCog):
     async def notes(self, ctx: dc.Context[DiscordBot]) -> None:
         """List all your notes."""
         todo_list = await self.get_list(ctx)
+        notes = []
 
-        async def embeds_getter() -> tuple[discord.Embed, ...]:
-            return tuple(
-                Embed(
-                    self.bot,
-                    f"Note {index + 1}",
-                    description=note,
-                )
-                for index, note in enumerate(todo_list.notes)
-            )
+        for index, note in enumerate(todo_list.notes):
+            notes.append(f"`{index + 1}` {note}")
 
-        paged_embed = PagedEmbed(ctx, embeds_getter)
-        await paged_embed.send()
+        await self.bot.update_sticky(ctx, "\n".join(notes))
 
     @dc.hybrid_command()  # type: ignore[arg-type]
     async def delete_note(self, ctx: dc.Context[DiscordBot]) -> None:
         """Delete a note."""
         todo_list = await self.get_list(ctx)
+
+        if len(todo_list.notes) == 0:
+            await self.bot.update_sticky(ctx, "No notes to delete.")
+            return
+
         notes = []
 
         for index, note in enumerate(todo_list.notes):
-            notes.append(f"`{index + 1}` {truncate(note, 80)}")
+            notes.append(f"`{index + 1}` {truncate(note, 50)}")
 
         await self.bot.update_sticky(ctx, "\n".join(notes))
 
@@ -64,6 +61,7 @@ class RandomNotes(BaseCog):
 
         del todo_list.notes[note_num - 1]
         await todo_list.save_changes()
+        await self.bot.update_sticky(ctx, "Note deleted ✅")
 
 
 async def setup(bot: DiscordBot) -> None:
