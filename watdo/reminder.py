@@ -36,7 +36,7 @@ class Reminder:
                 return
 
             content = f"⏰ **Reminder** {'@here' if user is None else user.mention}"
-            embed = TaskEmbed(self.bot, task)
+            embed = TaskEmbed(self.bot, task, is_simple=True)
 
             await BaseCog.send(channel, content, embed=embed)
 
