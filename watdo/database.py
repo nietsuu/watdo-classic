@@ -4,7 +4,7 @@ from watdo.environ import REDIS_URL
 
 
 class Database:
-    _conn = Redis.from_url(REDIS_URL)
+    _conn = Redis.from_url(REDIS_URL, health_check_interval=30)
 
     async def iter_keys(self, match: str) -> AsyncIterator[str]:
         async for key in self._conn.scan_iter(match=match):
