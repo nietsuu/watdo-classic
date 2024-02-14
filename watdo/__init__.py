@@ -11,8 +11,9 @@ async def async_main(loop: asyncio.AbstractEventLoop) -> int:
     global bot
 
     db = Database()
-    bot = Bot(loop=loop, database=db)
+    await db.initialize(loop=loop)
 
+    bot = Bot(loop=loop, database=db)
     await bot.start(DISCORD_TOKEN)
 
     return 0

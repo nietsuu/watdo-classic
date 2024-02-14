@@ -1,10 +1,28 @@
+import asyncio
 from typing import Dict, List, Optional, AsyncIterator
+import redis
 from redis.asyncio import Redis
 from watdo.environ import REDIS_URL
 
 
 class Database:
+    @staticmethod
+    def _init_conn() -> Redis:
+        return Redis.from_url(REDIS_URL, health_check_interval=30)
+
     _conn = Redis.from_url(REDIS_URL, health_check_interval=30)
+
+    async def _conn_health_check_loop(self) -> None:
+        while True:
+            try:
+                await self._conn.ping()
+            except redis.exceptions.ConnectionError:
+                self._conn = self._init_conn()
+
+            await asyncio.sleep(1)
+
+    async def initialize(self, loop: asyncio.AbstractEventLoop) -> None:
+        loop.create_task(self._conn_health_check_loop())
 
     async def iter_keys(self, match: str) -> AsyncIterator[str]:
         async for key in self._conn.scan_iter(match=match):

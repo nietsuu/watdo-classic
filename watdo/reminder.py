@@ -1,5 +1,6 @@
 import asyncio
 from typing import TYPE_CHECKING, Any
+import redis
 from watdo import dt
 from watdo.models import Profile, Task, ScheduledTask
 from watdo.database import Database
@@ -61,28 +62,35 @@ class Reminder:
 
     async def _run(self) -> None:
         while True:
-            async for key in self.db.iter_keys("tasks:profile.*"):
-                profile_id = key.split(".")[1]
-                profile = await Profile.from_id(self.db, profile_id)
+            try:
+                async for key in self.db.iter_keys("tasks:profile.*"):
+                    profile_id = key.split(".")[1]
+                    profile = await Profile.from_id(self.db, profile_id)
 
-                if profile is None:
-                    continue
-
-                utc_offset = profile.utc_offset.value
-
-                for task_index, task in enumerate(
-                    await Task.get_tasks_of_profile(self.db, profile)
-                ):
-                    if not isinstance(task, ScheduledTask):
+                    if profile is None:
                         continue
 
-                    if task.next_reminder is None:
-                        continue
+                    utc_offset = profile.utc_offset.value
 
-                    if task.next_reminder.value <= dt.date_now(utc_offset).timestamp():
-                        self.bot.loop.create_task(self._update_task(profile, task))
+                    for task_index, task in enumerate(
+                        await Task.get_tasks_of_profile(self.db, profile)
+                    ):
+                        if not isinstance(task, ScheduledTask):
+                            continue
 
-            await asyncio.sleep(1)
+                        if task.next_reminder is None:
+                            continue
+
+                        if (
+                            task.next_reminder.value
+                            <= dt.date_now(utc_offset).timestamp()
+                        ):
+                            self.bot.loop.create_task(self._update_task(profile, task))
+
+                await asyncio.sleep(1)
+
+            except redis.exceptions.ConnectionError:
+                await asyncio.sleep(10)
 
     def start(self) -> None:
         self.loop.create_task(self._run())

@@ -3,6 +3,7 @@ import glob
 import asyncio
 import logging
 from typing import cast, Any, List
+import redis
 import discord
 from discord.ext import commands as dc
 from watdo import dt
@@ -79,10 +80,13 @@ class Bot(dc.Bot):
             await self.on_message(message)
 
     async def process_command_shortcuts(self, message: discord.Message) -> bool:
-        command = await self.db.get_command_shortcut(
-            str(message.author.id),
-            message.content,
-        )
+        try:
+            command = await self.db.get_command_shortcut(
+                str(message.author.id),
+                message.content,
+            )
+        except redis.exceptions.ConnectionError:
+            command = None
 
         if command is None:
             return False
