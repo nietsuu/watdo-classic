@@ -1,0 +1,37 @@
+#!/usr/bin/env expect
+
+set password "bmIjAfD3PIOec3KhlMBJhgbl4P3Pmho6"
+set host "roundhouse.proxy.rlwy.net"
+set port "34372"
+
+spawn bash
+expect "$"
+
+send "killall redis-server redis-cli\r"
+expect "$"
+
+sleep 1
+
+spawn redis-server
+expect "Running in standalone mode"
+
+sleep 0.5
+
+spawn redis-cli
+expect "127.0.0.1:6379>"
+
+send "config set masterauth $password\r"
+expect "127.0.0.1:6379>"
+
+send "SLAVEOF $host $port\r"
+expect "127.0.0.1:6379>"
+
+send "INFO replication\r"
+expect "master_sync_in_progress:0"
+expect "127.0.0.1:6379>"
+
+send "SAVE\r"
+expect "OK"
+
+send "SLAVEOF NO ONE\r"
+expect "127.0.0.1:6379>"
