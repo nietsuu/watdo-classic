@@ -86,11 +86,10 @@ class Reminder:
                             <= dt.date_now(utc_offset).timestamp()
                         ):
                             self.bot.loop.create_task(self._update_task(profile, task))
-
-                await asyncio.sleep(1)
-
             except redis.exceptions.ConnectionError:
-                await asyncio.sleep(10)
+                pass
+
+            await asyncio.sleep(60)
 
     def start(self) -> None:
         self.loop.create_task(self._run())
